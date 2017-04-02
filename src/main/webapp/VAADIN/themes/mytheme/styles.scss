@@ -4,8 +4,21 @@
 // This file prefixes all rules with the theme name to avoid causing conflicts with other themes.
 // The actual styles should be defined in mytheme.scss
 
+@keyframes newitem {
+    from {color: red;}
+    to {color: #776e65;}
+}
+
 .mytheme {
   @include addons;
   @include mytheme;
+  
+  .newitem {
+    background: yellow;
+    -webkit-animation: newitem 1s linear;
+    -moz-animation: newitem 1s linear;
+    -ms-animation: newitem 1s linear;
+    animation: newitem 1s linear;
+  }
 
 }

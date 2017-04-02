@@ -673,59 +673,229 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
 */
-package org.nineunderground.game;
+package board;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.nineunderground.game.ui.BoardLayout;
+import java.util.PrimitiveIterator.OfInt;
+import java.util.stream.IntStream;
 
-import com.vaadin.addon.touchkit.server.TouchKitServlet;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.Widgetset;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import org.junit.Test;
+import org.nineunderground.game.GameEngine;
+import org.nineunderground.game.GameEngine.MODE;
 
 /**
+ * Test class to validate swipe events an final events like isWin or IsGameOver
  * 
  * @author inaki
  *
- *         This UI is the application entry point. A UI may either represent a
- *         browser window (or tab) or some part of a html page where a Vaadin
- *         application is embedded.
- *         <p>
- *         The UI is initialized using {@link #init(VaadinRequest)}. This method
- *         is intended to be overridden to add component to the user interface
- *         and initialize non-component functionality.
  */
-@Theme("mytheme")
-@Widgetset("org.vaadin.touchkit.gwt.GameWidgetSet")
-@Title("2048v")
-public class MyUI extends UI {
-    private static final long serialVersionUID = 7664729118286363293L;
+public class MovementTest {
 
-    @Override
-    protected void init(VaadinRequest vaadinRequest) {
-	GameEngine game = new GameEngine();
-	BoardLayout board = new BoardLayout(game);
-	setContent(board);
-	board.startGame();
+    @Test
+    public void testMoveToLeft() {
+	GameEngine ge = initGameEngine();
+	int[] expectedScores;
+	expectedScores = new int[] { 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 1", GameEngine.MODE.TO_LEFT, ge, 1, 2, expectedScores);
+	expectedScores = new int[] { 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 2", GameEngine.MODE.TO_LEFT, ge, 5, -1, expectedScores);
+	expectedScores = new int[] { 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 3", GameEngine.MODE.TO_LEFT, ge, 7, -1, expectedScores);
+	expectedScores = new int[] { 4, 2, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 4", GameEngine.MODE.TO_LEFT, ge, 3, -1, expectedScores);
+	expectedScores = new int[] { 4, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 5", GameEngine.MODE.TO_LEFT, ge, 4, -1, expectedScores);
+	expectedScores = new int[] { 8, 0, 0, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 6", GameEngine.MODE.TO_LEFT, ge, 11, -1, expectedScores);
+	ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1);
+	ge.setNewCellIntoMatrix(2);
+	ge.setNewCellIntoMatrix(4);
+	expectedScores = new int[] { 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 7", GameEngine.MODE.TO_LEFT, ge, -1, -1, expectedScores);
+    }
+
+    @Test
+    public void testMoveToRight() {
+	GameEngine ge = initGameEngine();
+	int[] expectedScores;
+	expectedScores = new int[] { 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 1", GameEngine.MODE.TO_RIGHT, ge, 1, 2, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 2", GameEngine.MODE.TO_RIGHT, ge, 5, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 3", GameEngine.MODE.TO_RIGHT, ge, 7, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 2, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 4", GameEngine.MODE.TO_RIGHT, ge, 3, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 5", GameEngine.MODE.TO_RIGHT, ge, 1, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 8, 0, 0, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0 };
+	testScores("Case 6", GameEngine.MODE.TO_RIGHT, ge, 11, -1, expectedScores);
+	ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1);
+	ge.setNewCellIntoMatrix(2);
+	ge.setNewCellIntoMatrix(4);
+	expectedScores = new int[] { 0, 0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 7", GameEngine.MODE.TO_RIGHT, ge, -1, -1, expectedScores);
+    }
+
+    @Test
+    public void testMixMoveToLeftAndRight() {
+	GameEngine ge = initGameEngine();
+	int[] expectedScores;
+	expectedScores = new int[] { 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 1", GameEngine.MODE.TO_RIGHT, ge, 1, 2, expectedScores);
+	expectedScores = new int[] { 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 2", GameEngine.MODE.TO_LEFT, ge, 1, -1, expectedScores);
+	expectedScores = new int[] { 0, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 3", GameEngine.MODE.TO_RIGHT, ge, 4, -1, expectedScores);
+	expectedScores = new int[] { 4, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 4", GameEngine.MODE.TO_LEFT, ge, 1, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 8, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 5", GameEngine.MODE.TO_RIGHT, ge, 8, -1, expectedScores);
+	expectedScores = new int[] { 8, 2, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 6", GameEngine.MODE.TO_LEFT, ge, 6, -1, expectedScores);
+    }
+
+    @Test
+    public void testMoveToBottom() {
+	GameEngine ge = initGameEngine();
+	int[] expectedScores;
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0 };
+	testScores("Case 1", GameEngine.MODE.TO_BOTTOM, ge, 1, 5, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };
+	testScores("Case 2", GameEngine.MODE.TO_BOTTOM, ge, 5, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0 };
+	testScores("Case 3", GameEngine.MODE.TO_BOTTOM, ge, 5, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 2, 0 };
+	testScores("Case 4", GameEngine.MODE.TO_BOTTOM, ge, 3, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 4, 0 };
+	testScores("Case 5", GameEngine.MODE.TO_BOTTOM, ge, 7, -1, expectedScores);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 2, 4, 0 };
+	testScores("Case 6", GameEngine.MODE.TO_BOTTOM, ge, 2, -1, expectedScores);
+	ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1);
+	ge.setNewCellIntoMatrix(5);
+	ge.setNewCellIntoMatrix(9);
+	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };
+	testScores("Case 7", GameEngine.MODE.TO_BOTTOM, ge, -1, -1, expectedScores);
+    }
+
+    @Test
+    public void testMoveToTop() {
+	GameEngine ge = initGameEngine();
+	int[] expectedScores;
+	expectedScores = new int[] { 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 1", GameEngine.MODE.TO_TOP, ge, 1, 2, expectedScores);
+	expectedScores = new int[] { 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 2", GameEngine.MODE.TO_TOP, ge, 5, -1, expectedScores);
+	expectedScores = new int[] { 4, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 3", GameEngine.MODE.TO_TOP, ge, 7, -1, expectedScores);
+	expectedScores = new int[] { 4, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 4", GameEngine.MODE.TO_TOP, ge, 7, -1, expectedScores);
+	expectedScores = new int[] { 4, 2, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 5", GameEngine.MODE.TO_TOP, ge, 16, -1, expectedScores);
+	expectedScores = new int[] { 4, 2, 4, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 6", GameEngine.MODE.TO_TOP, ge, 11, -1, expectedScores);
+	ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1);
+	ge.setNewCellIntoMatrix(5);
+	ge.setNewCellIntoMatrix(9);
+	expectedScores = new int[] { 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	testScores("Case 7", GameEngine.MODE.TO_TOP, ge, -1, -1, expectedScores);
+    }
+
+    @Test
+    public void testGameOver() {
+	GameEngine ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1, 2);
+	ge.setNewCellIntoMatrix(2, 8);
+	ge.setNewCellIntoMatrix(3, 4);
+	ge.setNewCellIntoMatrix(4, 2);
+	ge.setNewCellIntoMatrix(5, 4);
+	ge.setNewCellIntoMatrix(6, 16);
+	ge.setNewCellIntoMatrix(7, 128);
+	ge.setNewCellIntoMatrix(8, 8);
+	ge.setNewCellIntoMatrix(9, 64);
+	ge.setNewCellIntoMatrix(10, 4);
+	ge.setNewCellIntoMatrix(11, 2);
+	ge.setNewCellIntoMatrix(12, 32);
+	ge.setNewCellIntoMatrix(13, 2);
+	ge.setNewCellIntoMatrix(14, 16);
+	ge.setNewCellIntoMatrix(15, 32);
+	ge.setNewCellIntoMatrix(16, 2);
+	assertTrue("Expected game over ", ge.isGameOver());
+	ge.setNewCellIntoMatrix(11, 128);
+	assertTrue("Expected NO game over ", !ge.isGameOver());
+    }
+
+    @Test
+    public void testWin() {
+	GameEngine ge = initGameEngine();
+	ge.setNewCellIntoMatrix(1, 2);
+	ge.setNewCellIntoMatrix(2, 8);
+	ge.setNewCellIntoMatrix(3, 4);
+	ge.setNewCellIntoMatrix(4, 2);
+	ge.setNewCellIntoMatrix(5, 4);
+	ge.setNewCellIntoMatrix(6, 16);
+	ge.setNewCellIntoMatrix(7, 1024);
+	ge.setNewCellIntoMatrix(8, 8);
+	ge.setNewCellIntoMatrix(9, 64);
+	ge.setNewCellIntoMatrix(10, 4);
+	ge.setNewCellIntoMatrix(11, 2);
+	ge.setNewCellIntoMatrix(12, 32);
+	ge.setNewCellIntoMatrix(13, 2048);
+	ge.setNewCellIntoMatrix(14, 16);
+	ge.setNewCellIntoMatrix(15, 32);
+	ge.setNewCellIntoMatrix(16, 2);
+	assertTrue("Expected game win ", ge.isFinalWin());
     }
 
     /**
-     * The Class MyUIServlet.
+     * Inits the game engine.
+     *
+     * @return the game engine
      */
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = MyUI.class, productionMode = true, heartbeatInterval = -1)
-    public static class MyUIServlet extends TouchKitServlet {
-	private static final long serialVersionUID = 1259803207649501173L;
-
-	@Override
-	protected void servletInitialized() throws ServletException {
-	    super.servletInitialized();
-	}
+    private GameEngine initGameEngine() {
+	GameEngine ge;
+	ge = new GameEngine(true);
+	ge.initGame(null);
+	return ge;
     }
 
+    /**
+     * Test scores.
+     * 
+     * @param testCase
+     *
+     * @param toLeft
+     *            the to left
+     * @param ge
+     *            the ge
+     * @param positionA
+     *            the position A
+     * @param positionB
+     *            the position B
+     * @param expectedScores
+     *            the expected scores
+     */
+    private void testScores(String testCase, MODE swipeMode, GameEngine ge, int positionA, int positionB,
+	    int[] expectedScores) {
+	if (positionA != -1) {
+	    ge.setNewCellIntoMatrix(positionA, 2);
+	}
+	if (positionB != -1) {
+	    ge.setNewCellIntoMatrix(positionB, 2);
+	}
+	ge.doSwipe(swipeMode);
+	// Test board positions and values
+	OfInt iterator = IntStream.rangeClosed(1, 16).iterator();
+	while (iterator.hasNext()) {
+	    int position = iterator.nextInt();
+	    assertEquals(testCase + " - Expected cell score at position " + position, expectedScores[position - 1],
+		    ge.getGameMatrixMap().get(position).getScore());
+	}
+    }
 }

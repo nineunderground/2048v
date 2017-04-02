@@ -673,59 +673,95 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
 */
-package org.nineunderground.game;
+package org.nineunderground.game.table;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-
-import org.nineunderground.game.ui.BoardLayout;
-
-import com.vaadin.addon.touchkit.server.TouchKitServlet;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.Widgetset;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import com.vaadin.server.Sizeable.Unit;
+import com.vaadin.ui.Label;
 
 /**
- * 
  * @author inaki
  *
- *         This UI is the application entry point. A UI may either represent a
- *         browser window (or tab) or some part of a html page where a Vaadin
- *         application is embedded.
- *         <p>
- *         The UI is initialized using {@link #init(VaadinRequest)}. This method
- *         is intended to be overridden to add component to the user interface
- *         and initialize non-component functionality.
  */
-@Theme("mytheme")
-@Widgetset("org.vaadin.touchkit.gwt.GameWidgetSet")
-@Title("2048v")
-public class MyUI extends UI {
-    private static final long serialVersionUID = 7664729118286363293L;
+public class BoardCell {
 
-    @Override
-    protected void init(VaadinRequest vaadinRequest) {
-	GameEngine game = new GameEngine();
-	BoardLayout board = new BoardLayout(game);
-	setContent(board);
-	board.startGame();
+    public int position;
+    public Label number;
+    public int score = 0;
+
+    /**
+     * Instantiates a new board cell.
+     *
+     * @param pos
+     *            the pos
+     */
+    public BoardCell(int pos) {
+	this.position = pos;
+	this.number = new Label();
+	this.number.setWidth(100, Unit.PERCENTAGE);
+	this.number.setHeight(100, Unit.PERCENTAGE);
+	this.number.setValue("0");
+	this.number.addStyleName("score-style-0");
     }
 
     /**
-     * The Class MyUIServlet.
+     * Instantiates a new board cell.
+     *
+     * @param cell
+     *            the cell
      */
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = MyUI.class, productionMode = true, heartbeatInterval = -1)
-    public static class MyUIServlet extends TouchKitServlet {
-	private static final long serialVersionUID = 1259803207649501173L;
+    public BoardCell(BoardCell cell) {
+	this.number = cell.number;
+	this.position = cell.position;
+	this.score = cell.score;
+    }
 
-	@Override
-	protected void servletInitialized() throws ServletException {
-	    super.servletInitialized();
+    /**
+     * Reset.
+     */
+    public void reset() {
+	this.score = 0;
+	this.number = new Label();
+	this.number.setWidth(100, Unit.PERCENTAGE);
+	this.number.setHeight(100, Unit.PERCENTAGE);
+    }
+
+    public Label getNumber() {
+	return number;
+    }
+
+    public void setNumber(Label number) {
+	this.number = number;
+    }
+
+    public int getScore() {
+	return score;
+    }
+
+    public void setScore(int score) {
+	this.reset();
+	this.score = score;
+	String scoreAsString = Integer.toString(score);
+	if (score > 0) {
+	    this.number.setValue(scoreAsString);
 	}
+	this.number.addStyleName("score-style-" + scoreAsString);
+    }
+
+    public void setPosition(int position) {
+	this.position = position;
+    }
+
+    public int getPosition() {
+	return position;
+    }
+
+    public boolean isHasValue() {
+	return score > 0;
+    }
+
+    @Override
+    public String toString() {
+	return "Cell POS=" + this.position + " SCORE=" + this.score;
     }
 
 }

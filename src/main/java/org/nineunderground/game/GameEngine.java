@@ -675,57 +675,574 @@ Public License instead of this License.  But first, please read
 */
 package org.nineunderground.game;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import org.nineunderground.game.ui.BoardLayout;
+import org.nineunderground.game.table.BoardCell;
+import org.nineunderground.game.table.BoardRow;
 
-import com.vaadin.addon.touchkit.server.TouchKitServlet;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.Widgetset;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 
 /**
+ * The Class GameEngine.
  * 
  * @author inaki
  *
- *         This UI is the application entry point. A UI may either represent a
- *         browser window (or tab) or some part of a html page where a Vaadin
- *         application is embedded.
- *         <p>
- *         The UI is initialized using {@link #init(VaadinRequest)}. This method
- *         is intended to be overridden to add component to the user interface
- *         and initialize non-component functionality.
  */
-@Theme("mytheme")
-@Widgetset("org.vaadin.touchkit.gwt.GameWidgetSet")
-@Title("2048v")
-public class MyUI extends UI {
-    private static final long serialVersionUID = 7664729118286363293L;
+public class GameEngine {
 
-    @Override
-    protected void init(VaadinRequest vaadinRequest) {
-	GameEngine game = new GameEngine();
-	BoardLayout board = new BoardLayout(game);
-	setContent(board);
-	board.startGame();
+    private static final Supplier<IntStream> END_POSITIONS_AFTER_UP_SWIPE = () -> IntStream.of(1, 2, 3, 4);
+    private static final Supplier<IntStream> END_POSITIONS_AFTER_DOWN_SWIPE = () -> IntStream.of(13, 14, 15, 16);
+    private static final Supplier<IntStream> END_POSITIONS_AFTER_RIGHT_SWIPE = () -> IntStream.of(4, 8, 12, 16);
+    private static final Supplier<IntStream> END_POSITIONS_AFTER_LEFT_SWIPE = () -> IntStream.of(1, 5, 9, 13);
+    private static final int TARGET_SCORE = 2048;
+    private static final int INITIAL_SCORE = 2;
+    private static final String SCORE_TAG = "SCORE";
+    /* COMPARATORS */
+    private final Comparator<BoardCell> sortFromRightToLeft = (o1,
+	    o2) -> Integer.compare(o1.getPosition(), o2.getPosition()) * -1;
+
+    public enum MODE {
+	TO_TOP, TO_BOTTOM, TO_LEFT, TO_RIGHT;
+    }
+
+    private final Random rdm;
+
+    private Map<Integer, BoardCell> gameMatrixMap;
+    private BeanItemContainer<BoardRow> board;
+    private boolean gameFinished;
+    private int currentScore;
+    private Label scoreLabel;
+    private boolean isTest;
+    private boolean isAnyPossibleMove;
+
+    /**
+     * Instantiates a new game engine.
+     *
+     * @param beanItemContainer
+     *            the board
+     */
+    public GameEngine() {
+	gameFinished = false;
+	currentScore = 0;
+	board = null;
+	gameMatrixMap = new HashMap<>(16);
+	rdm = new Random(new Date().getTime());
     }
 
     /**
-     * The Class MyUIServlet.
+     * Instantiates a new game engine.
+     *
+     * @param isTest
+     *            the is test
      */
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = MyUI.class, productionMode = true, heartbeatInterval = -1)
-    public static class MyUIServlet extends TouchKitServlet {
-	private static final long serialVersionUID = 1259803207649501173L;
+    public GameEngine(boolean isTest) {
+	this();
+	this.scoreLabel = new Label();
+	this.isTest = isTest;
+    }
 
-	@Override
-	protected void servletInitialized() throws ServletException {
-	    super.servletInitialized();
+    /**
+     * Initializes the game.
+     *
+     * @param beanItemContainer
+     *            the bean item container
+     */
+    public void initGame(BeanItemContainer<BoardRow> beanItemContainer) {
+	gameFinished = false;
+	currentScore = 0;
+	this.scoreLabel.setValue("Score: " + currentScore);
+	this.board = beanItemContainer;
+	IntStream.rangeClosed(1, 16).forEach(i -> gameMatrixMap.put(i, new BoardCell(i)));
+	if (!isTest) {
+	    int pos1 = getNewCellToDisplay();
+	    setNewCellIntoMatrix(pos1);
+	    int pos2 = getNewCellToDisplay();
+	    setNewCellIntoMatrix(pos2);
+	    updateBoardGUI();
 	}
     }
 
+    /**
+     * From the current gameMatrixCell, it checks the empty positions and it
+     * randomizes one position
+     *
+     * @return the random position.
+     */
+    private int getNewCellToDisplay() {
+	// @formatter:off
+	List<Integer> totalEmptyPositions = gameMatrixMap.values().stream()
+		.filter(cell -> !cell.isHasValue())
+		.map(BoardCell::getPosition)
+		.collect(Collectors.toList());
+	// @formatter:on
+	int randomPos = rdm.nextInt(totalEmptyPositions.size());
+	return totalEmptyPositions.get(randomPos).intValue();
+    }
+
+    /**
+     * Sets the new cell into matrix.
+     *
+     * @param position
+     *            the new new cell into matrix
+     */
+    public void setNewCellIntoMatrix(int position) {
+	BoardCell cellToSet = gameMatrixMap.get(position);
+	cellToSet.setNumber(new Label());
+	cellToSet.setScore(INITIAL_SCORE);
+    }
+
+    /**
+     * Sets the new cell into matrix.
+     *
+     * @param position
+     *            the position
+     * @param scoreToSet
+     *            the score to set
+     */
+    public void setNewCellIntoMatrix(int position, int scoreToSet) {
+	BoardCell cellToSet = gameMatrixMap.get(position);
+	cellToSet.setNumber(new Label());
+	cellToSet.setScore(scoreToSet);
+    }
+
+    /**
+     * Update board table with all labels set in gameMatrixCell
+     */
+    private void updateBoardGUI() {
+	if (isTest) {
+	    return;
+	}
+	board.removeAllItems();
+	// @formatter:off
+	// Four rows
+	END_POSITIONS_AFTER_LEFT_SWIPE.get().forEach(firstPositionInRow -> {
+	    BoardRow bean = new BoardRow(
+		    gameMatrixMap.get(firstPositionInRow), 
+		    gameMatrixMap.get(firstPositionInRow + 1), 
+		    gameMatrixMap.get(firstPositionInRow + 2),
+		    gameMatrixMap.get(firstPositionInRow + 3));
+	    board.addBean(bean);
+	});
+	// @formatter:on
+    }
+
+    /**
+     * Do swipe.
+     *
+     * @param modeToSwipe
+     *            the mode to swipe
+     */
+    public void doSwipe(MODE modeToSwipe) {
+	Map<Integer, BoardCell> gameMatrixMapCopy = new HashMap<>(16);
+	IntStream.rangeClosed(1, 16).forEach(i -> gameMatrixMapCopy.putAll(gameMatrixMap));
+	String previousSwipeValues = gameMatrixMapCopy.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		.reduce("", (a, b) -> a + b);
+	if (modeToSwipe == MODE.TO_LEFT) {
+	    doLeftSwipe(false);
+	} else if (modeToSwipe == MODE.TO_RIGHT) {
+	    doRightSwipe(false);
+	} else if (modeToSwipe == MODE.TO_BOTTOM) {
+	    doDownSwipe(false);
+	} else if (modeToSwipe == MODE.TO_TOP) {
+	    doUpSwipe(false);
+	}
+	String postSwipeValues = gameMatrixMap.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		.reduce("", (a, b) -> a + b);
+	if (!previousSwipeValues.equals(postSwipeValues)) {
+	    checkConditionsAndRefresh();
+	}
+    }
+
+    /**
+     * // @formatter:off
+     * 	BEFORE			AFTER
+     * -----------------       -----------------
+     * - 2 - . - 2 - . 2       - 4 - 2 - . - . -
+     * - 2 - 2 - . - . -  --\  - 4 - . - . - . -
+     * - . - . - . - . -  --/  - . - . - . - . -
+     * - 2 - . - . - . -       - 2 - . - . - . -
+     * -----------------       -----------------
+     * // @formatter:on
+     * Do left swipe.
+     * @param isSimulation 
+     */
+    private void doLeftSwipe(boolean isSimulation) {
+	// Match every row in swipe direction
+	// Then, for each move squares and for each joint add up score
+	END_POSITIONS_AFTER_LEFT_SWIPE.get().forEach(cellPositionInTable -> {
+	    // @formatter:off
+	    Predicate<? super BoardCell> filterCells = cell ->
+	    	cell.getPosition() == cellPositionInTable ||
+	    	cell.getPosition() == cellPositionInTable + 1 ||
+	    	cell.getPosition() == cellPositionInTable + 2 ||
+	    	cell.getPosition() == cellPositionInTable + 3;
+	    List<BoardCell> cellsToCheck = gameMatrixMap.values().stream()
+		    .filter(filterCells)
+		    .filter(BoardCell::isHasValue)
+		    .map(BoardCell::new)
+		    .collect(Collectors.toList());
+	    // @formatter:on
+	    boolean isAnyNotNull = cellsToCheck.stream().anyMatch(notNull -> notNull.getScore() > 0);
+	    if (isAnyNotNull) {
+		refreshMatrixRow(isSimulation, cellPositionInTable, cellsToCheck, MODE.TO_LEFT);
+	    }
+	});
+    }
+
+    /**
+     * // @formatter:off
+     * 	BEFORE			AFTER
+     * -----------------       -----------------
+     * - 2 - . - 2 - . 2       - . - . - . 2 . 4
+     * - 2 - 2 - . - . -  --\  - . - . - . - . 4
+     * - . - . - . - . -  --/  - . - . - . - . -
+     * - 2 - . - . - . -       - . - . - . - . 2
+     * -----------------       -----------------
+     * // @formatter:on
+     * Do right swipe.
+     * @param isSimulation 
+     */
+    private void doRightSwipe(boolean isSimulation) {
+	END_POSITIONS_AFTER_RIGHT_SWIPE.get().forEach(cellPositionInTable -> {
+	    // @formatter:off
+	    Predicate<? super BoardCell> filterCells = cell ->
+	    	cell.getPosition() == cellPositionInTable ||
+	    	cell.getPosition() == cellPositionInTable - 1 ||
+	    	cell.getPosition() == cellPositionInTable - 2 ||
+	    	cell.getPosition() == cellPositionInTable - 3;
+	    List<BoardCell> cellsToCheck = gameMatrixMap.values().stream()
+		    .filter(filterCells)
+		    .filter(BoardCell::isHasValue)
+		    .map(BoardCell::new)
+		    .collect(Collectors.toList());
+	    // @formatter:on
+	    boolean isAnyNotNull = cellsToCheck.stream().anyMatch(notNull -> notNull.getScore() > 0);
+	    if (isAnyNotNull) {
+		refreshMatrixRow(isSimulation, cellPositionInTable, cellsToCheck, MODE.TO_RIGHT);
+	    }
+	});
+    }
+
+    /**
+     * Do down swipe.
+     * 
+     * @param isSimulation
+     */
+    private void doDownSwipe(boolean isSimulation) {
+	END_POSITIONS_AFTER_DOWN_SWIPE.get().forEach(cellPositionInTable -> {
+	    // @formatter:off
+	    Predicate<? super BoardCell> filterCells = cell ->
+		    	cell.getPosition() == cellPositionInTable ||
+		    	cell.getPosition() == cellPositionInTable - 4 ||
+		    	cell.getPosition() == cellPositionInTable - 8 ||
+		    	cell.getPosition() == cellPositionInTable - 12;
+		    	List<BoardCell> cellsToCheck = gameMatrixMap.values().stream()
+			    .filter(filterCells)
+			    .filter(BoardCell::isHasValue)
+			    .map(BoardCell::new)
+			    .collect(Collectors.toList());
+		    	// @formatter:on
+	    boolean isAnyNotNull = cellsToCheck.stream().anyMatch(notNull -> notNull.getScore() > 0);
+	    if (isAnyNotNull) {
+		refreshMatrixRow(isSimulation, cellPositionInTable, cellsToCheck, MODE.TO_BOTTOM);
+	    }
+	});
+    }
+
+    /**
+     * Do up swipe.
+     * 
+     * @param isSimulation
+     */
+    private void doUpSwipe(boolean isSimulation) {
+	END_POSITIONS_AFTER_UP_SWIPE.get().forEach(cellPositionInTable -> {
+	    // @formatter:off
+		    Predicate<? super BoardCell> filterCells = cell ->
+			    	cell.getPosition() == cellPositionInTable ||
+			    	cell.getPosition() == cellPositionInTable + 4 ||
+			    	cell.getPosition() == cellPositionInTable + 8 ||
+			    	cell.getPosition() == cellPositionInTable + 12;
+			    	List<BoardCell> cellsToCheck = gameMatrixMap.values().stream()
+				    .filter(filterCells)
+				    .filter(BoardCell::isHasValue)
+				    .map(BoardCell::new)
+				    .collect(Collectors.toList());
+			    	// @formatter:on
+	    boolean isAnyNotNull = cellsToCheck.stream().anyMatch(notNull -> notNull.getScore() > 0);
+	    if (isAnyNotNull) {
+		refreshMatrixRow(isSimulation, cellPositionInTable, cellsToCheck, MODE.TO_TOP);
+	    }
+	});
+    }
+
+    /**
+     * Refresh matrix row.
+     * 
+     * @param isSimulation
+     *
+     * @param cellPositionInTable
+     *            the cell position in table
+     * @param cellsToCheck
+     *            the cells to check
+     */
+    private void refreshMatrixRow(boolean isSimulation, int cellPositionInTable, List<BoardCell> cellsToCheck,
+	    MODE mode) {
+	Map<Integer, BoardCell> gameMatrixMapCopy = new HashMap<>(16);
+	IntStream.rangeClosed(1, 16).forEach(i -> gameMatrixMapCopy.putAll(gameMatrixMap));
+	// First of all, if any label has "the new" style, then I remove it
+	List<BoardCell> cellsToMergeCopy = new ArrayList<>(cellsToCheck);
+	if (cellsToMergeCopy.size() > 1) {
+	    if (mode == MODE.TO_LEFT || mode == MODE.TO_TOP) {
+		cellsToMergeCopy = getMergedRowToLeftOrTop(cellsToCheck);
+	    } else if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
+		cellsToMergeCopy = getMergedRowToRightOrBottom(cellsToCheck);
+	    }
+	    // After some cells have been merged, then skip the empty cells
+	    cellsToMergeCopy = cellsToMergeCopy.stream().filter(c -> c.getScore() > 0).collect(Collectors.toList());
+	}
+	// Move all cells skipping empty cells
+	if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
+	    cellsToMergeCopy.sort(sortFromRightToLeft);
+	}
+	int positionToReplace = cellPositionInTable;
+	BoardCell cellToSet;
+	int cellsSet = 0;
+	// Put all valid cells
+	for (BoardCell cellToCheck : cellsToMergeCopy) {
+	    cellToSet = new BoardCell(cellToCheck);
+	    cellToSet.setPosition(positionToReplace);
+	    gameMatrixMapCopy.put(positionToReplace, cellToSet);
+	    positionToReplace = getNextPositionToSet(mode, positionToReplace);
+	    cellsSet++;
+	}
+	// And then fill with empty ones
+	while (cellsSet < 4) {
+	    gameMatrixMapCopy.put(positionToReplace, new BoardCell(positionToReplace));
+	    positionToReplace = getNextPositionToSet(mode, positionToReplace);
+	    cellsSet++;
+	}
+	if (isSimulation) {
+	    String previousSwipeValues = gameMatrixMap.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		    .reduce("", (a, b) -> a + b);
+	    String postSwipeValues = gameMatrixMapCopy.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		    .reduce("", (a, b) -> a + b);
+	    if (!previousSwipeValues.equals(postSwipeValues)) {
+		isAnyPossibleMove = true;
+	    }
+	} else {
+	    gameMatrixMap = gameMatrixMapCopy;
+	}
+    }
+
+    /**
+     * Gets the next position to set.
+     *
+     * @param mode
+     *            the mode
+     * @param currentPosition
+     *            the current position
+     * @return the next position to set
+     */
+    private int getNextPositionToSet(MODE mode, int currentPosition) {
+	int positionToReturn = currentPosition;
+	if (mode == MODE.TO_LEFT) {
+	    positionToReturn++;
+	    return positionToReturn;
+	} else if (mode == MODE.TO_RIGHT) {
+	    positionToReturn--;
+	    return positionToReturn;
+	} else if (mode == MODE.TO_TOP) {
+	    return positionToReturn + 4;
+	} else if (mode == MODE.TO_BOTTOM) {
+	    return positionToReturn - 4;
+	} else {
+	    return -1;
+	}
+    }
+
+    /**
+     * Gets the merged row to right or bottom.
+     *
+     * @param cellsToCheck
+     *            the cells to check
+     * @param mode
+     *            the mode
+     * @return the merged row to right or bottom
+     */
+    private List<BoardCell> getMergedRowToRightOrBottom(List<BoardCell> cellsToCheck) {
+	List<BoardCell> cellsToMergeCopy = new ArrayList<>(cellsToCheck);
+	BoardCell currentCell;
+	BoardCell nextCellToCheck;
+	int itemToCheck = 0;
+	cellsToCheck.sort(sortFromRightToLeft);
+	while (itemToCheck < cellsToCheck.size()) {
+	    currentCell = cellsToCheck.get(itemToCheck);
+	    if (itemToCheck + 1 < cellsToCheck.size()) {
+		nextCellToCheck = cellsToCheck.get(itemToCheck + 1);
+		if (currentCell.getScore() == nextCellToCheck.getScore()) {
+		    mergeCells(cellsToMergeCopy, nextCellToCheck.getPosition(), currentCell.getPosition(),
+			    nextCellToCheck.getScore());
+		    itemToCheck++;
+		}
+	    }
+	    itemToCheck++;
+	}
+	return cellsToMergeCopy;
+    }
+
+    /**
+     * Gets the merged row to left or top.
+     *
+     * @param cellsToCheck
+     *            the cells to check
+     * @param mode
+     *            the mode
+     * @return the merged row to left or top
+     */
+    private List<BoardCell> getMergedRowToLeftOrTop(List<BoardCell> cellsToCheck) {
+	List<BoardCell> cellsToMergeCopy = new ArrayList<>(cellsToCheck);
+	BoardCell currentCell;
+	BoardCell nextCellToCheck;
+	int itemToCheck = 0;
+	while (itemToCheck < cellsToCheck.size()) {
+	    currentCell = cellsToCheck.get(itemToCheck);
+	    if (itemToCheck < cellsToCheck.size() - 1) {
+		nextCellToCheck = cellsToCheck.get(itemToCheck + 1);
+		if (currentCell.getScore() == nextCellToCheck.getScore()) {
+		    mergeCells(cellsToMergeCopy, nextCellToCheck.getPosition(), currentCell.getPosition(),
+			    nextCellToCheck.getScore());
+		    itemToCheck++;
+		}
+	    }
+	    itemToCheck++;
+	}
+	return cellsToMergeCopy;
+    }
+
+    /**
+     * Merge cells.
+     *
+     * @param cellsToMergeCopy
+     *            the cells to merge copy
+     * @param previousCell
+     *            the previous cell
+     * @param currentCell
+     *            the current cell
+     */
+    private void mergeCells(List<BoardCell> cellsToMergeCopy, int previousCellPosition, int currentCellPosition,
+	    int scoreToBeDoubled) {
+	BoardCell previousCellToBeIncreased = cellsToMergeCopy.stream()
+		.filter(cell -> cell.getPosition() == previousCellPosition).findFirst().orElse(null);
+	int newScore = scoreToBeDoubled * 2;
+	previousCellToBeIncreased.setScore(newScore);
+	BoardCell currentCellToBeReseted = cellsToMergeCopy.stream()
+		.filter(cell -> cell.getPosition() == currentCellPosition).findFirst().orElse(null);
+	currentCellToBeReseted.reset();
+	currentScore = currentScore + newScore;
+	this.scoreLabel.setValue("Score: " + currentScore);
+    }
+
+    /**
+     * Refresh after movement.
+     */
+    private void checkConditionsAndRefresh() {
+	if (isTest) {
+	    return;
+	}
+	updateBoardGUI();
+	if (isFinalWin()) {
+	    gameFinished = true;
+	    Notification.show("You win", "You are great!", Type.HUMANIZED_MESSAGE);
+	} else {
+	    int newCellPosition = getNewCellToDisplay();
+	    setNewCellIntoMatrix(newCellPosition);
+	    if (isGameOver()) {
+		gameFinished = true;
+		Notification.show("Game Over", "Click for a new game", Type.ERROR_MESSAGE);
+	    }
+	    updateBoardGUI();
+	}
+    }
+
+    /**
+     * Checks if is game over.
+     *
+     * @return true, if is game over
+     */
+    public boolean isGameOver() {
+	this.isAnyPossibleMove = false;
+	if (isAnyPossibleMove) {
+	    return false;
+	}
+	doLeftSwipe(true);
+	if (isAnyPossibleMove) {
+	    return false;
+	}
+	doRightSwipe(true);
+	if (isAnyPossibleMove) {
+	    return false;
+	}
+	doUpSwipe(true);
+	if (isAnyPossibleMove) {
+	    return false;
+	}
+	doDownSwipe(true);
+	if (isAnyPossibleMove) {
+	    return false;
+	}
+	return true;
+    }
+
+    /**
+     * Checks if is final win.
+     *
+     * @return true, if is final win
+     */
+    public boolean isFinalWin() {
+	return gameMatrixMap.values().stream().anyMatch(cell -> cell.getScore() == TARGET_SCORE);
+    }
+
+    // Public callbacks
+
+    /**
+     * Sets the score.
+     *
+     * @param scoreLabel
+     *            the new score
+     */
+    public void setResetedScore(Label scoreLabel) {
+	this.scoreLabel = scoreLabel;
+	this.scoreLabel.setValue("Score: 0");
+    }
+
+    /**
+     * Checks if is game finished.
+     *
+     * @return true, if is game finished
+     */
+    public boolean isGameFinished() {
+	return gameFinished;
+    }
+
+    /**
+     * Gets the game matrix map.
+     *
+     * @return the game matrix map
+     */
+    public Map<Integer, BoardCell> getGameMatrixMap() {
+	return gameMatrixMap;
+    }
 }

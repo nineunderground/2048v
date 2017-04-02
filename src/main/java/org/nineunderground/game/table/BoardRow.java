@@ -673,59 +673,68 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
 */
-package org.nineunderground.game;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-
-import org.nineunderground.game.ui.BoardLayout;
-
-import com.vaadin.addon.touchkit.server.TouchKitServlet;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.Widgetset;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+package org.nineunderground.game.table;
 
 /**
- * 
  * @author inaki
  *
- *         This UI is the application entry point. A UI may either represent a
- *         browser window (or tab) or some part of a html page where a Vaadin
- *         application is embedded.
- *         <p>
- *         The UI is initialized using {@link #init(VaadinRequest)}. This method
- *         is intended to be overridden to add component to the user interface
- *         and initialize non-component functionality.
  */
-@Theme("mytheme")
-@Widgetset("org.vaadin.touchkit.gwt.GameWidgetSet")
-@Title("2048v")
-public class MyUI extends UI {
-    private static final long serialVersionUID = 7664729118286363293L;
+public class BoardRow {
 
-    @Override
-    protected void init(VaadinRequest vaadinRequest) {
-	GameEngine game = new GameEngine();
-	BoardLayout board = new BoardLayout(game);
-	setContent(board);
-	board.startGame();
-    }
+    public BoardCell col1;
+    public BoardCell col2;
+    public BoardCell col3;
+    public BoardCell col4;
 
     /**
-     * The Class MyUIServlet.
+     * Instantiates a new board row.
+     *
+     * @param col1
+     *            the col 1
+     * @param col2
+     *            the col 2
+     * @param col3
+     *            the col 3
+     * @param col4
+     *            the col 4
      */
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = MyUI.class, productionMode = true, heartbeatInterval = -1)
-    public static class MyUIServlet extends TouchKitServlet {
-	private static final long serialVersionUID = 1259803207649501173L;
+    public BoardRow(BoardCell col1, BoardCell col2, BoardCell col3, BoardCell col4) {
+	this.col1 = col1;
+	this.col2 = col2;
+	this.col3 = col3;
+	this.col4 = col4;
+    }
 
-	@Override
-	protected void servletInitialized() throws ServletException {
-	    super.servletInitialized();
-	}
+    public BoardCell getCol1() {
+	return col1;
+    }
+
+    public void setCol1(BoardCell col1) {
+	this.col1 = col1;
+    }
+
+    public BoardCell getCol2() {
+	return col2;
+    }
+
+    public void setCol2(BoardCell col2) {
+	this.col2 = col2;
+    }
+
+    public BoardCell getCol3() {
+	return col3;
+    }
+
+    public void setCol3(BoardCell col3) {
+	this.col3 = col3;
+    }
+
+    public BoardCell getCol4() {
+	return col4;
+    }
+
+    public void setCol4(BoardCell col4) {
+	this.col4 = col4;
     }
 
 }
