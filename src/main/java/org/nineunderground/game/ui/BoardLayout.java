@@ -3,6 +3,9 @@
  */
 package org.nineunderground.game.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.nineunderground.game.GameEngine;
 import org.nineunderground.game.GameEngine.MODE;
 import org.nineunderground.game.table.BoardRow;
@@ -32,10 +35,11 @@ public class BoardLayout extends VerticalLayout {
     private static final String FOURTH_COLUMN = "col4.number";
 
     private BeanItemContainer<BoardRow> container;
-    private Button up;
-    private Button down;
-    private Button left;
-    private Button right;
+    // private Button up;
+    // private Button down;
+    // private Button left;
+    // private Button right;
+    List<Button> btnList;
     private GameEngine game;
 
     /**
@@ -56,6 +60,7 @@ public class BoardLayout extends VerticalLayout {
     private void setLayout() {
 	removeAllComponents();
 	setSizeFull();
+	setSpacing(false);
 	HorizontalLayout header = createHeaderLayout();
 	addComponent(header);
 	HorizontalLayout tableLayout = createTableLayout();
@@ -75,17 +80,18 @@ public class BoardLayout extends VerticalLayout {
     private HorizontalLayout createHeaderLayout() {
 	HorizontalLayout header = new HorizontalLayout();
 	header.setWidth(100, Unit.PERCENTAGE);
-	header.setHeight(100, Unit.PERCENTAGE);
-	Button newGame = new Button(FontAwesome.GAMEPAD);
+	header.addStyleName("header-layout");
+	Button newGame = new Button("NEW GAME");
 	newGame.addClickListener(c -> startGame());
+	newGame.addStyleName("new-game-button");
 	header.addComponent(newGame);
 	Label scoreLabel = new Label();
+	scoreLabel.addStyleName("score-counter");
+	scoreLabel.setWidth(100, Unit.PERCENTAGE);
 	game.setResetedScore(scoreLabel);
 	header.addComponent(scoreLabel);
-	header.setExpandRatio(newGame, 3);
-	header.setExpandRatio(scoreLabel, 7);
 	header.setComponentAlignment(newGame, Alignment.MIDDLE_LEFT);
-	header.setComponentAlignment(scoreLabel, Alignment.MIDDLE_RIGHT);
+	header.setComponentAlignment(scoreLabel, Alignment.BOTTOM_RIGHT);
 	return header;
     }
 
@@ -110,43 +116,56 @@ public class BoardLayout extends VerticalLayout {
      */
     private HorizontalLayout createCommandLayout() {
 	HorizontalLayout footer = new HorizontalLayout();
+	footer.addStyleName("footer-layout");
 	footer.setWidth(100, Unit.PERCENTAGE);
 	footer.setHeight(100, Unit.PERCENTAGE);
-	up = new Button();
-	up.setIcon(FontAwesome.ARROW_UP);
-	up.addClickListener(c -> {
-	    game.doSwipe(MODE.TO_TOP);
-	    if (game.isGameFinished())
-		enableButtons(false);
-	});
-	footer.addComponent(up);
-	down = new Button();
-	down.setIcon(FontAwesome.ARROW_DOWN);
-	down.addClickListener(c -> {
-	    game.doSwipe(MODE.TO_BOTTOM);
-	    if (game.isGameFinished())
-		enableButtons(false);
-	});
-	footer.addComponent(down);
-	left = new Button();
-	left.setIcon(FontAwesome.ARROW_LEFT);
-	left.addClickListener(c -> {
-	    game.doSwipe(MODE.TO_LEFT);
-	    if (game.isGameFinished())
-		enableButtons(false);
-	});
+
+	btnList = new ArrayList<>();
+	Button up = createButton(FontAwesome.ARROW_UP, MODE.TO_TOP);
+	Button down = createButton(FontAwesome.ARROW_DOWN, MODE.TO_BOTTOM);
+	Button left = createButton(FontAwesome.ARROW_LEFT, MODE.TO_LEFT);
+	Button right = createButton(FontAwesome.ARROW_RIGHT, MODE.TO_RIGHT);
+
+	VerticalLayout centralButtons = new VerticalLayout();
+	centralButtons.addComponent(up);
+	centralButtons.addComponent(down);
+	centralButtons.setComponentAlignment(up, Alignment.MIDDLE_CENTER);
+	centralButtons.setComponentAlignment(down, Alignment.MIDDLE_CENTER);
+	centralButtons.setSpacing(true);
+
 	footer.addComponent(left);
-	right = new Button();
-	right.setIcon(FontAwesome.ARROW_RIGHT);
-	right.addClickListener(c -> {
-	    game.doSwipe(MODE.TO_RIGHT);
-	    if (game.isGameFinished())
-		enableButtons(false);
-	});
+	footer.addComponent(centralButtons);
 	footer.addComponent(right);
+
+	footer.setComponentAlignment(left, Alignment.MIDDLE_CENTER);
+	footer.setComponentAlignment(right, Alignment.MIDDLE_CENTER);
+
 	addComponent(footer);
 	enableButtons(false);
 	return footer;
+    }
+
+    /**
+     * Creates the button.
+     *
+     * @param fontIcon
+     *            the font icon
+     * @param modeToSwipe
+     *            the mode to swipe
+     */
+    private Button createButton(FontAwesome fontIcon, MODE modeToSwipe) {
+	Button btn = new Button();
+	btn.setIcon(fontIcon);
+	btn.addClickListener(c -> {
+	    game.doSwipe(modeToSwipe);
+	    if (game.isGameFinished())
+		enableButtons(false);
+	});
+	btn.setWidth(100, Unit.PIXELS);
+	btn.setHeight(50, Unit.PIXELS);
+	btn.addStyleName("swipe-button");
+	btnList.add(btn);
+	return btn;
     }
 
     /**
@@ -156,10 +175,9 @@ public class BoardLayout extends VerticalLayout {
      *            the has to enable
      */
     public void enableButtons(boolean hasToEnable) {
-	up.setEnabled(hasToEnable);
-	down.setEnabled(hasToEnable);
-	right.setEnabled(hasToEnable);
-	left.setEnabled(hasToEnable);
+	for (Button btn : btnList) {
+	    btn.setEnabled(hasToEnable);
+	}
     }
 
     /**

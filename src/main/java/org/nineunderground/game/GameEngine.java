@@ -681,6 +681,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -800,7 +801,6 @@ public class GameEngine {
      */
     public void setNewCellIntoMatrix(int position) {
 	BoardCell cellToSet = gameMatrixMap.get(position);
-	cellToSet.setNumber(new Label());
 	cellToSet.setScore(INITIAL_SCORE);
     }
 
@@ -880,8 +880,9 @@ public class GameEngine {
      * @param isSimulation 
      */
     private void doLeftSwipe(boolean isSimulation) {
-	// Match every row in swipe direction
-	// Then, for each move squares and for each joint add up score
+	if (!isSimulation) {
+	    clearAnimations();
+	}
 	END_POSITIONS_AFTER_LEFT_SWIPE.get().forEach(cellPositionInTable -> {
 	    // @formatter:off
 	    Predicate<? super BoardCell> filterCells = cell ->
@@ -916,6 +917,9 @@ public class GameEngine {
      * @param isSimulation 
      */
     private void doRightSwipe(boolean isSimulation) {
+	if (!isSimulation) {
+	    clearAnimations();
+	}
 	END_POSITIONS_AFTER_RIGHT_SWIPE.get().forEach(cellPositionInTable -> {
 	    // @formatter:off
 	    Predicate<? super BoardCell> filterCells = cell ->
@@ -942,6 +946,9 @@ public class GameEngine {
      * @param isSimulation
      */
     private void doDownSwipe(boolean isSimulation) {
+	if (!isSimulation) {
+	    clearAnimations();
+	}
 	END_POSITIONS_AFTER_DOWN_SWIPE.get().forEach(cellPositionInTable -> {
 	    // @formatter:off
 	    Predicate<? super BoardCell> filterCells = cell ->
@@ -968,6 +975,9 @@ public class GameEngine {
      * @param isSimulation
      */
     private void doUpSwipe(boolean isSimulation) {
+	if (!isSimulation) {
+	    clearAnimations();
+	}
 	END_POSITIONS_AFTER_UP_SWIPE.get().forEach(cellPositionInTable -> {
 	    // @formatter:off
 		    Predicate<? super BoardCell> filterCells = cell ->
@@ -985,6 +995,16 @@ public class GameEngine {
 	    if (isAnyNotNull) {
 		refreshMatrixRow(isSimulation, cellPositionInTable, cellsToCheck, MODE.TO_TOP);
 	    }
+	});
+    }
+
+    /**
+     * Clear animations.
+     */
+    private void clearAnimations() {
+	gameMatrixMap.values().stream().forEach(cell -> {
+	    cell.getNumber().removeStyleName("matching-tiles-animation");
+	    cell.getNumber().removeStyleName("new-item-animation");
 	});
     }
 
@@ -1148,6 +1168,7 @@ public class GameEngine {
 		.filter(cell -> cell.getPosition() == previousCellPosition).findFirst().orElse(null);
 	int newScore = scoreToBeDoubled * 2;
 	previousCellToBeIncreased.setScore(newScore);
+	previousCellToBeIncreased.getNumber().addStyleName("matching-tiles-animation");
 	BoardCell currentCellToBeReseted = cellsToMergeCopy.stream()
 		.filter(cell -> cell.getPosition() == currentCellPosition).findFirst().orElse(null);
 	currentCellToBeReseted.reset();
@@ -1173,7 +1194,23 @@ public class GameEngine {
 		gameFinished = true;
 		Notification.show("Game Over", "Click for a new game", Type.ERROR_MESSAGE);
 	    }
+	    addNewItemAnimation(newCellPosition);
 	    updateBoardGUI();
+	}
+    }
+
+    /**
+     * Sets the animation style to given cell position and it removes all the
+     * other ones
+     *
+     * @param newCellPosition
+     *            the new cell position
+     */
+    private void addNewItemAnimation(int newCellPosition) {
+	Optional<BoardCell> cellToSetStyle = gameMatrixMap.values().stream()
+		.filter(cell -> newCellPosition == cell.getPosition()).findFirst();
+	if (cellToSetStyle.isPresent()) {
+	    cellToSetStyle.get().getNumber().addStyleName("new-item-animation");
 	}
     }
 
