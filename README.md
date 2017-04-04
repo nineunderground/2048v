@@ -17,12 +17,9 @@ Basic Vaadin web classic 2048 game with Vaadin Touchkit included.
 Views
 -------------------------
 
-Upload images
-![Upload logo](docs/screenshots/screenshots_1.PNG "Screenshot 1")
-
-Setup images
-![Setup logo](docs/screenshots/screenshots_1.PNG "Screenshot 2")
-
+|   Game on     |   Game over   |
+| ------------- | ------------- |
+|  ![Upload logo](docs/screenshots/screenshots_1.PNG "Screenshot 1") | ![Setup logo](docs/screenshots/screenshots_1.PNG "Screenshot 2")  |
 
 LICENSE
 ========
