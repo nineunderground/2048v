@@ -61,11 +61,29 @@ public class BoardLayout extends VerticalLayout {
 	addComponent(header);
 	HorizontalLayout tableLayout = createTableLayout();
 	addComponent(tableLayout);
+	HorizontalLayout infoLayout = createInfoLayout();
+	addComponent(infoLayout);
 	HorizontalLayout footer = createCommandLayout();
 	// Setting layout
 	setExpandRatio(header, 1);
 	setExpandRatio(tableLayout, 7);
 	setExpandRatio(footer, 2);
+    }
+
+    /**
+     * Creates the info layout.
+     *
+     * @return the horizontal layout
+     */
+    private HorizontalLayout createInfoLayout() {
+	HorizontalLayout layout = new HorizontalLayout();
+	layout.setWidth(100, Unit.PERCENTAGE);
+	Label infoLabel = new Label();
+	infoLabel.setValue(
+		"Use arrow buttons to match same number and try to reach the 2048 before there is no empty spaces");
+	infoLabel.addStyleName("info");
+	layout.addComponent(infoLabel);
+	return layout;
     }
 
     /**

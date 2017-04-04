@@ -445,6 +445,11 @@
 	border-style: outset;
 }
 
+.mytheme .info {
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
 .mytheme .new-item-animation {
 	animation: animationFramesNewItem linear 1s;
 	animation-iteration-count: 1;
