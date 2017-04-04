@@ -1022,21 +1022,30 @@ public class GameEngine {
 	    MODE mode) {
 	Map<Integer, BoardCell> gameMatrixMapCopy = new HashMap<>(16);
 	IntStream.rangeClosed(1, 16).forEach(i -> gameMatrixMapCopy.putAll(gameMatrixMap));
-	// First of all, if any label has "the new" style, then I remove it
-	List<BoardCell> cellsToMergeCopy = new ArrayList<>(cellsToCheck);
-	if (cellsToMergeCopy.size() > 1) {
-	    if (mode == MODE.TO_LEFT || mode == MODE.TO_TOP) {
-		cellsToMergeCopy = getMergedRowToLeftOrTop(cellsToCheck);
-	    } else if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
-		cellsToMergeCopy = getMergedRowToRightOrBottom(cellsToCheck);
-	    }
-	    // After some cells have been merged, then skip the empty cells
-	    cellsToMergeCopy = cellsToMergeCopy.stream().filter(c -> c.getScore() > 0).collect(Collectors.toList());
+	List<BoardCell> cellsToMergeCopy = getRowReadyToSet(cellsToCheck, mode);
+	setNewMatrixToDisplay(mode, cellsToMergeCopy, gameMatrixMapCopy, cellPositionInTable);
+	if (isSimulation) {
+	    checkBeforeAndAfterMove(gameMatrixMapCopy);
+	} else {
+	    gameMatrixMap = gameMatrixMapCopy;
 	}
-	// Move all cells skipping empty cells
-	if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
-	    cellsToMergeCopy.sort(sortFromRightToLeft);
-	}
+    }
+
+    /**
+     * Gets the new matrix to display.
+     *
+     * @param mode
+     *            the mode
+     * @param cellsToMergeCopy
+     *            the cells to merge copy
+     * @param gameMatrixMapCopy
+     *            the game matrix map copy
+     * @param cellPositionInTable
+     *            the cell position in table
+     * @return the new matrix to display
+     */
+    private void setNewMatrixToDisplay(MODE mode, List<BoardCell> cellsToMergeCopy,
+	    Map<Integer, BoardCell> gameMatrixMapCopy, int cellPositionInTable) {
 	int positionToReplace = cellPositionInTable;
 	BoardCell cellToSet;
 	int cellsSet = 0;
@@ -1054,16 +1063,48 @@ public class GameEngine {
 	    positionToReplace = getNextPositionToSet(mode, positionToReplace);
 	    cellsSet++;
 	}
-	if (isSimulation) {
-	    String previousSwipeValues = gameMatrixMap.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
-		    .reduce("", (a, b) -> a + b);
-	    String postSwipeValues = gameMatrixMapCopy.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
-		    .reduce("", (a, b) -> a + b);
-	    if (!previousSwipeValues.equals(postSwipeValues)) {
-		isAnyPossibleMove = true;
+    }
+
+    /**
+     * Gets the row ready to set.
+     *
+     * @param cellsToCheck
+     *            the cells to check
+     * @param mode
+     *            the mode
+     * @return the row ready to set
+     */
+    private List<BoardCell> getRowReadyToSet(List<BoardCell> cellsToCheck, MODE mode) {
+	List<BoardCell> cellsToMergeCopy = new ArrayList<>(cellsToCheck);
+	if (cellsToMergeCopy.size() > 1) {
+	    if (mode == MODE.TO_LEFT || mode == MODE.TO_TOP) {
+		cellsToMergeCopy = getMergedRowToLeftOrTop(cellsToCheck);
+	    } else if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
+		cellsToMergeCopy = getMergedRowToRightOrBottom(cellsToCheck);
 	    }
-	} else {
-	    gameMatrixMap = gameMatrixMapCopy;
+	    // After some cells have been merged, then skip the empty cells
+	    cellsToMergeCopy = cellsToMergeCopy.stream().filter(c -> c.getScore() > 0).collect(Collectors.toList());
+	}
+	// Move all cells skipping empty cells
+	if (mode == MODE.TO_RIGHT || mode == MODE.TO_BOTTOM) {
+	    cellsToMergeCopy.sort(sortFromRightToLeft);
+	}
+	return cellsToMergeCopy;
+    }
+
+    /**
+     * Check before and after move.
+     *
+     * @param gameMatrixMapCopy
+     *            the game matrix map copy
+     */
+    private void checkBeforeAndAfterMove(Map<Integer, BoardCell> gameMatrixMapCopy) {
+	String previousSwipeValues = gameMatrixMap.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		.reduce("", (a, b) -> a + b);
+	String postSwipeValues = gameMatrixMapCopy.values().stream().map(cell -> SCORE_TAG + cell.getScore() + " ")
+		.reduce("", (a, b) -> a + b);
+	if (!previousSwipeValues.equals(postSwipeValues)) {
+	    isAnyPossibleMove = true;
 	}
     }
 
@@ -1221,9 +1262,6 @@ public class GameEngine {
      */
     public boolean isGameOver() {
 	this.isAnyPossibleMove = false;
-	if (isAnyPossibleMove) {
-	    return false;
-	}
 	doLeftSwipe(true);
 	if (isAnyPossibleMove) {
 	    return false;
@@ -1237,10 +1275,7 @@ public class GameEngine {
 	    return false;
 	}
 	doDownSwipe(true);
-	if (isAnyPossibleMove) {
-	    return false;
-	}
-	return true;
+	return !isAnyPossibleMove;
     }
 
     /**
@@ -1251,8 +1286,6 @@ public class GameEngine {
     public boolean isFinalWin() {
 	return gameMatrixMap.values().stream().anyMatch(cell -> cell.getScore() == TARGET_SCORE);
     }
-
-    // Public callbacks
 
     /**
      * Sets the score.

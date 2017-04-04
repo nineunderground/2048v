@@ -35,11 +35,7 @@ public class BoardLayout extends VerticalLayout {
     private static final String FOURTH_COLUMN = "col4.number";
 
     private BeanItemContainer<BoardRow> container;
-    // private Button up;
-    // private Button down;
-    // private Button left;
-    // private Button right;
-    List<Button> btnList;
+    private List<Button> btnList;
     private GameEngine game;
 
     /**

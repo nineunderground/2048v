@@ -531,9 +531,6 @@
 	-o-animation: animationFramesNewItem linear 1s;
 	-o-animation-iteration-count: 1;
 	-o-transform-origin: 50% 50%;
-	-ms-animation: animationFramesNewItem linear 1s;
-	-ms-animation-iteration-count: 1;
-	-ms-transform-origin: 50% 50%;
 }
 
 .mytheme .matching-tiles-animation {
@@ -549,7 +546,4 @@
 	-o-animation: animationFramesTileMatched linear 1s;
 	-o-animation-iteration-count: 1;
 	-o-transform-origin: 50% 50%;
-	-ms-animation: animationFramesTileMatched linear 1s;
-	-ms-animation-iteration-count: 1;
-	-ms-transform-origin: 50% 50%;
 }

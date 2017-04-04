@@ -681,6 +681,7 @@ import javax.servlet.annotation.WebServlet;
 import org.nineunderground.game.ui.BoardLayout;
 
 import com.vaadin.addon.touchkit.server.TouchKitServlet;
+import com.vaadin.addon.touchkit.settings.TouchKitSettings;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -725,6 +726,9 @@ public class MyUI extends UI {
 	@Override
 	protected void servletInitialized() throws ServletException {
 	    super.servletInitialized();
+	    TouchKitSettings s = getTouchKitSettings();
+	    String contextPath = getServletConfig().getServletContext().getContextPath();
+	    s.getApplicationIcons().addApplicationIcon(contextPath + "VAADIN/themes/mytheme/favicon.ico");
 	}
     }
 

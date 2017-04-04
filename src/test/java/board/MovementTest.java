@@ -676,6 +676,7 @@ Public License instead of this License.  But first, please read
 package board;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.PrimitiveIterator.OfInt;
@@ -715,6 +716,9 @@ public class MovementTest {
 	ge.setNewCellIntoMatrix(4);
 	expectedScores = new int[] { 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	testScores("Case 7", GameEngine.MODE.TO_LEFT, ge, -1, -1, expectedScores);
+	// Dummy asserttion to avoid complaints. In fact the assert methods are
+	// recurring called from "testScores()"
+	assertTrue(true);
     }
 
     @Test
@@ -739,6 +743,9 @@ public class MovementTest {
 	ge.setNewCellIntoMatrix(4);
 	expectedScores = new int[] { 0, 0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	testScores("Case 7", GameEngine.MODE.TO_RIGHT, ge, -1, -1, expectedScores);
+	// Dummy asserttion to avoid complaints. In fact the assert methods are
+	// recurring called from "testScores()"
+	assertTrue(true);
     }
 
     @Test
@@ -757,6 +764,9 @@ public class MovementTest {
 	testScores("Case 5", GameEngine.MODE.TO_RIGHT, ge, 8, -1, expectedScores);
 	expectedScores = new int[] { 8, 2, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	testScores("Case 6", GameEngine.MODE.TO_LEFT, ge, 6, -1, expectedScores);
+	// Dummy asserttion to avoid complaints. In fact the assert methods are
+	// recurring called from "testScores()"
+	assertTrue(true);
     }
 
     @Test
@@ -781,6 +791,9 @@ public class MovementTest {
 	ge.setNewCellIntoMatrix(9);
 	expectedScores = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };
 	testScores("Case 7", GameEngine.MODE.TO_BOTTOM, ge, -1, -1, expectedScores);
+	// Dummy asserttion to avoid complaints. In fact the assert methods are
+	// recurring called from "testScores()"
+	assertTrue(true);
     }
 
     @Test
@@ -805,6 +818,9 @@ public class MovementTest {
 	ge.setNewCellIntoMatrix(9);
 	expectedScores = new int[] { 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	testScores("Case 7", GameEngine.MODE.TO_TOP, ge, -1, -1, expectedScores);
+	// Dummy asserttion to avoid complaints. In fact the assert methods are
+	// recurring called from "testScores()"
+	assertTrue(true);
     }
 
     @Test
@@ -828,7 +844,7 @@ public class MovementTest {
 	ge.setNewCellIntoMatrix(16, 2);
 	assertTrue("Expected game over ", ge.isGameOver());
 	ge.setNewCellIntoMatrix(11, 128);
-	assertTrue("Expected NO game over ", !ge.isGameOver());
+	assertFalse("Expected NO game over ", ge.isGameOver());
     }
 
     @Test
