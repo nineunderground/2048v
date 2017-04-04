@@ -1,7 +1,9 @@
 2048v
 ==============
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c5bdf00d73754cba8c5b071621bce964)](https://www.codacy.com/app/nineunderground/imagerulette?utm_source=github.com&utm_medium=referral&utm_content=nineunderground/imagerulette&utm_campaign=badger)
+[![Build Status](https://travis-ci.org/nineunderground/2048v.svg?branch=master)](https://travis-ci.org/nineunderground/2048v)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/43bccf4fe2fd46fca7af6a2468490ab6)](https://www.codacy.com/app/nineunderground/2048v?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nineunderground/2048v&amp;utm_campaign=Badge_Grade)
+[![Dependency Status](https://www.versioneye.com/user/projects/58e3f5d624ef3e003b526e02/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58e3f5d624ef3e003b526e02)
 
 [You can try here](https://v2048.herokuapp.com)
 
@@ -16,12 +18,15 @@ Views
 -------------------------
 
 Upload images
-
 ![Upload logo](docs/screenshots/screenshots_1.PNG "Screenshot 1")
 
 Setup images
-
 ![Setup logo](docs/screenshots/screenshots_1.PNG "Screenshot 2")
+
+
+LICENSE
+========
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 Running project locally
 -------------------------
