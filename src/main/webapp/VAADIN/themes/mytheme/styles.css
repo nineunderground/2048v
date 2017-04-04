@@ -142,42 +142,6 @@
 	}
 	}
 
-@-ms-keyframes animationFramesNewItem {
-		0% {
-		-ms-transform: rotate(0deg) scaleX(1) scaleY(1);
-	}
-		10% {
-		-ms-transform: rotate(-3deg) scaleX(0.8) scaleY(0.8);
-	}
-		20% {
-		-ms-transform: rotate(-3deg) scaleX(0.8) scaleY(0.8);
-	}
-		30% {
-		-ms-transform: rotate(3deg) scaleX(1.2) scaleY(1.2);
-	}
-		40% {
-		-ms-transform: rotate(-3deg) scaleX(1.2) scaleY(1.2);
-	}
-		50% {
-		-ms-transform: rotate(3deg) scaleX(1.2) scaleY(1.2);
-	}
-		60% {
-		-ms-transform: rotate(-3deg) scaleX(1.2) scaleY(1.2);
-	}
-		70% {
-		-ms-transform: rotate(3deg) scaleX(1.2) scaleY(1.2);
-	}
-		80% {
-		-ms-transform: rotate(-3deg) scaleX(1.2) scaleY(1.2);
-	}
-		90% {
-		-ms-transform: rotate(3deg) scaleX(1.2) scaleY(1.2);
-	}
-		100% {
-		-ms-transform: rotate(0deg) scaleX(1.2) scaleY(1.2);
-	}
-	}
-
 @keyframes animationFramesTileMatched {
 		0% {
 		transform: translate(0px, 0px);
@@ -319,42 +283,6 @@
 	}
 		100% {
 		-o-transform: translate(0px, 0px);
-	}
-	}
-
-@-ms-keyframes animationFramesTileMatched {
-		0% {
-		-ms-transform: translate(0px, 0px);
-	}
-		10% {
-		-ms-transform: translate(-10px, 0px);
-	}
-		20% {
-		-ms-transform: translate(10px, 0px);
-	}
-		30% {
-		-ms-transform: translate(-10px, 0px);
-	}
-		40% {
-		-ms-transform: translate(10px, 0px);
-	}
-		50% {
-		-ms-transform: translate(-10px, 0px);
-	}
-		60% {
-		-ms-transform: translate(10px, 0px);
-	}
-		70% {
-		-ms-transform: translate(-10px, 0px);
-	}
-		80% {
-		-ms-transform: translate(10px, 0px);
-	}
-		90% {
-		-ms-transform: translate(-10px, 0px);
-	}
-		100% {
-		-ms-transform: translate(0px, 0px);
 	}
 	}
 
