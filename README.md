@@ -4,6 +4,8 @@
 [![Build Status](https://travis-ci.org/nineunderground/2048v.svg?branch=master)](https://travis-ci.org/nineunderground/2048v)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/43bccf4fe2fd46fca7af6a2468490ab6)](https://www.codacy.com/app/nineunderground/2048v?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nineunderground/2048v&amp;utm_campaign=Badge_Grade)
 [![Dependency Status](https://www.versioneye.com/user/projects/58e3f5d624ef3e003b526e02/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58e3f5d624ef3e003b526e02)
+[![Code Climate](https://codeclimate.com/github/nineunderground/2048v/badges/gpa.svg)](https://codeclimate.com/github/nineunderground/2048v)
+[![Coverage Status](https://coveralls.io/repos/github/nineunderground/2048v/badge.svg?branch=master)](https://coveralls.io/github/nineunderground/2048v?branch=master)
 
 [You can try here](https://v2048.herokuapp.com)
 
