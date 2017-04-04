@@ -19,7 +19,7 @@ Views
 
 |   Game on     |   Game over   |
 | ------------- | ------------- |
-|  ![Upload logo](docs/screenshots/screenshots_1.PNG "Screenshot 1") | ![Setup logo](docs/screenshots/screenshots_1.PNG "Screenshot 2")  |
+|  ![Upload logo](docs/screenshots/screenshots_1.PNG "Screenshot 1") | ![Setup logo](docs/screenshots/screenshots_2.PNG "Screenshot 2")  |
 
 LICENSE
 ========
